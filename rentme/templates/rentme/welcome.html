@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes float { 0% { transform: translateY(0); } 50% { transform: translateY(-10px); } 100% { transform: translateY(0); } }
+        @keyframes pulse { 0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(230, 57, 70, 0.7); } 70% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(230, 57, 70, 0); } 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(230, 57, 70, 0); } }
+        @keyframes underline { from { width: 0; } to { width: 100%; } }
+        .fade-in-up { animation: fadeInUp 1s ease-in-out; }
+        .float { animation: float 3s ease-in-out infinite; }
+        .pulse { animation: pulse 2s infinite; }
+        .underline-animation { position: relative; }
+        .underline-animation::after { content: ''; position: absolute; bottom: -4px; left: 0; width: 0; height: 2px; background: #e63946; animation: underline 1.5s ease-in-out forwards; }
+        body { background: #ffffff; font-family: 'Poppins', sans-serif; min-height: 100vh; margin: 0; padding: 0; position: relative; overflow-x: hidden; }
+        .card-hover:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1); }
+    </style>
+</head>
+<body>
+    <div class="container mx-auto flex flex-col min-h-screen items-center justify-center py-8 px-4 relative">
+        <h2 class="text-3xl md:text-4xl font-bold text-gray-800 mb-4 text-center fade-in-up float underline-animation">Welcome to RentMe</h2>
+        <p class="text-base md:text-lg text-gray-600 mb-8 text-center max-w-xl fade-in-up">Whether you're looking to rent your next home or sell a property, we’ve got you covered with seamless solutions.</p>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-3xl">
+            <div class="card-hover bg-white rounded-lg shadow-md p-6 flex flex-col items-center text-center transition-all duration-300 fade-in-up relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-500 to-red-700"></div>
+                <div class="w-12 h-12 bg-red-500 text-white rounded-full flex items-center justify-center mb-4 float">
+                    <i class="fas fa-home text-xl"></i>
+                </div>
+                <h3 class="text-xl font-semibold text-gray-800 mb-2">Rent a Property</h3>
+                <p class="text-sm text-gray-600 mb-6">Explore a variety of rental options tailored to your needs.</p>
+                <a href="{% url 'customer_login_signup' %}" class="bg-gradient-to-r from-red-500 to-red-700 text-white px-4 py-2 rounded-md font-medium text-sm hover:from-red-600 hover:to-red-800 transition-all duration-300 pulse">Explore Rentals</a>
+            </div>
+            <div class="card-hover bg-white rounded-lg shadow-md p-6 flex flex-col items-center text-center transition-all duration-300 fade-in-up relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-500 to-red-700"></div>
+                <div class="w-12 h-12 bg-red-500 text-white rounded-full flex items-center justify-center mb-4 float">
+                    <i class="fas fa-tag text-xl"></i>
+                </div>
+                <h3 class="text-xl font-semibold text-gray-800 mb-2">Sell a Property</h3>
+                <p class="text-sm text-gray-600 mb-6">List your property and reach potential buyers quickly and efficiently.</p>
+                <a href="{% url 'seller_login_signup' %}" class="bg-gradient-to-r from-red-500 to-red-700 text-white px-4 py-2 rounded-md font-medium text-sm hover:from-red-600 hover:to-red-800 transition-all duration-300 pulse">Start Selling</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seller Dashboard - RentMe</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .fade-in { animation: fadeIn 1s ease-in-out; }
+        .form-section { transition: all 0.5s ease-in-out; }
+        .input-icon { position: relative; }
+        .input-icon i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #e63946; }
+        .input-icon input, .input-icon select { padding-left: 40px; }
+        html, body { height: 100%; margin: 0; padding: 0; overflow-x: hidden; width: 100%; }
+        .form-content { max-height: calc(100vh - 200px); overflow-y: auto; }
+        input[type="checkbox"] { appearance: none; width: 20px; height: 20px; border: 2px solid #e63946; border-radius: 4px; outline: none; cursor: pointer; position: relative; }
+        input[type="checkbox"]:checked { background-color: #e63946; }
+        input[type="checkbox"]:checked::after { content: '\f00c'; font-family: 'Font Awesome 6 Free'; font-weight: 900; color: white; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 12px; }
+        .invalid { border-color: #e63946 !important; box-shadow: 0 0 5px rgba(230, 57, 70, 0.3); }
+        .image-preview { width: 100%; height: 100px; object-fit: cover; border-radius: 8px; border: 1px solid #e63946; }
+        .loading::after { content: ''; display: inline-block; width: 16px; height: 16px; border: 2px solid white; border-radius: 50%; border-top-color: transparent; animation: spin 1s linear infinite; margin-left: 8px; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .property-row { transition: background-color 0.3s ease; }
+        .property-row:hover { background-color: #f9f9f9; }
+    </style>
+</head>
+<body class="bg-gray-100 font-poppins">
+    <!-- Navbar -->
+    <nav class="bg-gradient-to-r from-red-500 to-red-600 p-4 text-white flex justify-between items-center shadow-lg">
+        <div class="flex items-center">
+            <a href="{% url 'welcome' %}" class="text-2xl font-semibold tracking-wide">RentMe</a>
+        </div>
+        <div class="flex items-center space-x-4">
+            <span class="text-lg">Hello, {{ username }}</span>
+            <a href="{% url 'logout' %}" class="bg-red-700 px-4 py-2 rounded-full hover:bg-red-800 transition-all duration-300">Logout</a>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container mx-auto px-4 sm:px-6 md:px-12 py-8 fade-in">
+        <h1 class="text-4xl md:text-5xl font-semibold text-center py-8 tracking-wide text-gray-800 bg-gradient-to-r from-red-500 to-red-600 bg-clip-text text-transparent">
+            Post Your Property
+        </h1>
+
+        <!-- Messages -->
+        {% if messages %}
+            {% for message in messages %}
+                <div class="mb-4 p-4 rounded-lg {% if message.tags == 'success' %}bg-green-100 text-green-700{% else %}bg-red-100 text-red-700{% endif %}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <!-- Property Form -->
+        <form id="propertyForm" method="POST" enctype="multipart/form-data" action="{% url 'seller_landing' %}" class="flex flex-col items-center justify-start w-full">
+            {% csrf_token %}
+            <div class="form-content w-full max-w-5xl">
+                <!-- Property Type Dropdown -->
+                <div class="w-full h-full flex items-center justify-center mb-8">
+                    <div class="w-full max-w-md">
+                        <label for="propertyType" class="block text-gray-700 text-lg font-medium mb-2 text-center">Choose Property Type</label>
+                        <div class="input-icon">
+                            <i class="fas fa-home"></i>
+                            <select id="propertyType" name="propertyType" class="bg-gray-100 border border-gray-300 p-4 w-full rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-red-500 transition-all duration-300 shadow-sm hover:bg-gray-200">
+                                <option value="" disabled selected>Select Property Type</option>
+                                <option value="pg">PG (Paying Guest)</option>
+                                <option value="room">Room</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PG Fields -->
+                <div id="pgFields" class="form-section hidden w-full space-y-6 bg-gray-50 p-6 rounded-lg shadow-inner">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div class="input-icon">
+                            <i class="fas fa-building"></i>
+                            <input type="text" name="pgName" placeholder="PG Name" class="bg-white border border-gray-300 p-4 w-full rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-red-500 transition-all duration-300 shadow-sm" />
+                        </div>
+                        <div class="input-icon">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <input type="text" name="pgLocation" placeholder="Location (e.g., Kharavela Nagar)" class="bg-white border border-gray-300 p-4 w-full rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-red-500 transition-all duration-300 shadow-sm" />
+                        </div>
+                        <div class="input-icon">
+                            <i class="fas fa-rupee-sign"></i>
+                            <input type="number" name="pgRent" placeholder="Monthly Rent (₹)" class="bg-white border border-gray-300 p-4 w-full rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-red-500 transition-all duration-300 shadow-sm" />
+                        </div>
+                        <div class="input-icon">
+                            <i class="fas fa-bed"></i>
+                            <select name="pgRoomType" class="bg-white border border-gray-300 p-4 w-full rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-red-500 transition-all duration-300 shadow-sm">
+                                <option value="" disabled selected>Room Type</option>
+                                <option value="single">Single Sharing</option>
+                                <option value="double">Double Sharing</option>
+                                <option value="triple">Triple Sharing</option>
+                                <option value="quad">Quad Sharing</option>
+                            </select>
+                        </div>
+                        <div class="input-icon">
+                            <i class="fas fa-users"></i>
+                            <input type="number" name="pgCapacity" placeholder="Capacity (No. of People)" class="bg-white border border-gray-300 p-4 w-full rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-red-500 transition-all duration-300 shadow-sm" />
+                        </div>
+                        <div class="input-icon">
+                            <i class="fas fa-clock"></i>
+                            <input type="text" name="pgAvailability" placeholder="Availability (e.g., Immediate)" class="bg-white border border-gray-300 p-4 w-full rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-red-500 transition-all duration-300 shadow-sm" />
+                        </div>
+                    </div>
+                    <div class="flex flex-wrap gap-6">
+                        <label class="flex items-center text-gray-700">
+                            <input type="checkbox" name="pgWifi" class="mr-2"> Wi-Fi
+                        </label>
+                        <label class="flex items-center text-gray-700">
+                            <input type="checkbox" name="pgMeals" class="mr-2"> Meals Included
+                        </label>
+                        <label class="flex items-center text-gray-700">
+                            <input type="checkbox" name="pgAC" class="mr-2"> AC
+                        </label>
+                        <label class="flex items-center text-gray-700">
+                            <input type="checkbox" name="pgLaundry" class="mr-2"> Laundry
+                        </label>
+                        <label class="flex items-center text-gray-700">
+                            <input type="checkbox" name="pgSecurity" class="mr-2"> Security
+                        </label>
+                        <label class="flex items-center text-gray-700">
+                            <input type="checkbox" name="pgPower" class="mr-2"> Power Backup
+                        </label>
+                        <label class="flex items-center text-gray-700">
+                            <input type="checkbox" name="pgParking" class="mr-2"> Parking
+                        </label>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        <div class="input-icon">
+                            <i class="fas fa-utensils"></i>
+                            <select name="pgMealType" class="bg-white border border-gray-300 p-4 w-full rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-red-500 transition-all duration-300 shadow-sm">
+                                <option value="" disabled selected>Meal Type</option>
+                                <option value="veg">Vegetarian Only</option>
+                                <option value="nonveg">Non-Vegetarian</option>
+                                <option value="both">Both</option>
+                            </select>
+                        </div>
+                        <div class="input-icon">
+                            <i class="fas fa-user-shield"></i>
+                            <select name="pgTenants" class="bg-white border border-gray-300 p-4 w-full rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-red-500 transition-all duration-300 shadow-sm">
+                                <option value="" disabled selected>Preferred Tenants</option>
+                                <option value="students">Students</option>
+                                <option value="working">Working Professionals</option>
+                                <option value="any">Any</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="relative">
+                        <textarea name="pgDetails" placeholder="Additional Details (e.g., house rules, nearby landmarks, transport access)" class="bg-white border border-gray-300 p-4 w-full rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-red-500 transition-all duration-300 shadow-sm" rows="4" maxlength="500"></textarea>
+                        <p class="text-sm text-gray-500 text-right mt-1"><span id="pgDetailsCount">0</span>/500</p>
+                    </div>
+                </div>
+
+                <!-- Room Fields -->
+                <div id="roomFields" class="form-section hidden w-full space-y-6 bg-gray-50 p-6 rounded-lg shadow-inner">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div class="input-icon">
+                            <i class="fas fa-home"></i>
+                            <input type="text" name="roomTitle" placeholder="Room Title (e.g., Cozy Single Room)" class="bg-white border border-gray-300 p-4 w-full rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-red-500 transition-all duration-300 shadow-sm" />
+                        </div>
+                        <div class="input-icon">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <input type="text" name="roomLocation" placeholder="Location (e.g., Nayapalli)" class="bg-white border border-gray-300 p-4 w-full rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-red-500 transition-all duration-300 shadow-sm" />
+                        </div>
+                        <div class="input-icon">
+                            <i class="fas fa-rupee-sign"></i>
+                            <input type="number" name="roomRent" placeholder="Monthly Rent (₹)" class="bg-white border border-gray-300 p-4 w-full rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-red-500 transition-all duration-300 shadow-sm" />
+                        </div>
+                        <div class="input-icon">
+                            <i class="fas fa-ruler-combined"></i>
+                            <input type="text" name="roomSize" placeholder="BHK (e.g., 2 BHK)" class="bg-white border border-gray-300 p-4 w-full rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-red-500 transition-all duration-300 shadow-sm" />
+                        </div>
+                        <div class="input-icon">
+                            <i class="fas fa-clock"></i>
+                            <input type="text" name="roomAvailability" placeholder="Availability (e.g., From 1st Dec)" class="bg-white border border-gray-300 p-4 w-full rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-red-500 transition-all duration-300 shadow-sm" />
+                        </div>
+                        <div class="input-icon">
+                            <i class="fas fa-building"></i>
+                            <input type="number" name="roomFloor" placeholder="Floor Number" class="bg-white border border-gray-300 p-4 w-full rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-red-500 transition-all duration-300 shadow-sm" />
+                        </div>
+                    </div>
+                    <div class="flex flex-wrap gap-6">
+                        <label class="flex items-center text-gray-700">
+                            <input type="checkbox" name="roomBathroom" class="mr-2"> Attached Bathroom
+                        </label>
+                        <label class="flex items-center text-gray-700">
+                            <input type="checkbox" name="roomBalcony" class="mr-2"> Balcony
+                        </label>
+                        <label class="flex items-center text-gray-700">
+                            <input type="checkbox" name="roomFurnished" class="mr-2"> Furnished
+                        </label>
+                        <label class="flex items-center text-gray-700">
+                            <input type="checkbox" name="roomKitchen" class="mr-2"> Kitchenette
+                        </label>
+                        <label class="flex items-center text-gray-700">
+                            <input type="checkbox" name="roomLight" class="mr-2"> Natural Light
+                        </label>
+                        <label class="flex items-center text-gray-700">
+                            <input type="checkbox" name="roomWardrobe" class="mr-2"> Wardrobe
+                        </label>
+                        <label class="flex items-center text-gray-700">
+                            <input type="checkbox" name="roomParking" class="mr-2"> Parking
+                        </label>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        <div class="input-icon">
+                            <i class="fas fa-bath"></i>
+                            <select name="roomBathroomType" class="bg-white border border-gray-300 p-4 w-full rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-red-500 transition-all duration-300 shadow-sm">
+                                <option value="" disabled selected>Bathroom Type</option>
+                                <option value="attached">Attached</option>
+                                <option value="shared">Shared</option>
+                            </select>
+                        </div>
+                        <div class="input-icon">
+                            <i class="fas fa-user-shield"></i>
+                            <select name="roomTenants" class="bg-white border border-gray-300 p-4 w-full rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-red-500 transition-all duration-300 shadow-sm">
+                                <option value="" disabled selected>Preferred Tenants</option>
+                                <option value="students">Students</option>
+                                <option value="working">Working Professionals</option>
+                                <option value="family">Family</option>
+                                <option value="any">Any</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="relative">
+                        <textarea name="roomDetails" placeholder="Additional Details (e.g., ventilation, nearby amenities, pet policy)" class="bg-white border border-gray-300 p-4 w-full rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-red-500 transition-all duration-300 shadow-sm" rows="4" maxlength="500"></textarea>
+                        <p class="text-sm text-gray-500 text-right mt-1"><span id="roomDetailsCount">0</span>/500</p>
+                    </div>
+                </div>
+
+                <!-- Image Upload -->
+                <div id="imageUpload" class="w-full mt-6 space-y-4 hidden">
+                    <label class="block text-gray-700 text-lg font-medium mb-2 bg-gradient-to-r from-red-500 to-red-600 bg-clip-text text-transparent">Upload Images (Up to 3, At Least 2 Required)</label>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                        <div>
+                            <input type="file" accept="image/*" name="image1" class="w-full p-2 border border-gray-300 rounded-lg text-sm text-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-red-50 file:text-red-700 hover:file:bg-red-100" id="image1">
+                            <img id="preview1" class="image-preview mt-2 hidden" alt="Image 1 Preview">
+                        </div>
+                        <div>
+                            <input type="file" accept="image/*" name="image2" class="w-full p-2 border border-gray-300 rounded-lg text-sm text-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-red-50 file:text-red-700 hover:file:bg-red-100" id="image2">
+                            <img id="preview2" class="image-preview mt-2 hidden" alt="Image 2 Preview">
+                        </div>
+                        <div>
+                            <input type="file" accept="image/*" name="image3" class="w-full p-2 border border-gray-300 rounded-lg text-sm text-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-red-50 file:text-red-700 hover:file:bg-red-100" id="image3">
+                            <img id="preview3" class="image-preview mt-2 hidden" alt="Image 3 Preview">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Buttons -->
+            <div class="flex flex-col sm:flex-row gap-4 my-10">
+                <button type="submit" class="rounded-full border border-red-500 bg-gradient-to-r from-red-500 to-red-600 text-white text-sm font-medium py-4 px-10 uppercase tracking-wider hover:from-red-400 hover:to-red-500 hover:scale-105 hover:shadow-lg transition-all duration-300 focus:outline-none active:scale-95">Submit Property</button>
+                <button type="button" id="clearForm" class="rounded-full border border-gray-500 bg-gray-500 text-white text-sm font-medium py-4 px-16 uppercase tracking-wider hover:bg-gray-600 hover:scale-105 hover:shadow-lg transition-all duration-300 focus:outline-none active:scale-95">Clear Form</button>
+            </div>
+        </form>
+
+        <!-- Property List -->
+        {% if properties %}
+            <h2 class="text-3xl font-semibold text-gray-800 mt-12 mb-6">Your Properties</h2>
+            <div class="bg-white rounded-lg shadow-md overflow-x-auto">
+                <!-- Table Header -->
+                <div class="flex font-semibold text-gray-800 bg-gray-100 p-4 border-b">
+                    <div class="flex-1">Property Name</div>
+                    <div class="flex-1">Location</div>
+                    <div class="flex-1">Rent</div>
+                    <div class="flex-1">Availability</div>
+                    <div class="w-24 text-right">Action</div>
+                </div>
+                <!-- Table Rows -->
+                {% for property in properties %}
+                    <div class="property-row flex items-center p-4 border-b text-gray-600">
+                        <div class="flex-1">
+                            {% if property.property_type == 'pg' %}
+                                {{ property.pg_name }}
+                            {% else %}
+                                {{ property.room_title }}
+                            {% endif %}
+                        </div>
+                        <div class="flex-1">
+                            <i class="fas fa-map-marker-alt mr-2"></i>{{ property.location }}
+                        </div>
+                        <div class="flex-1">
+                            <i class="fas fa-rupee-sign mr-2"></i>{{ property.rent }}
+                        </div>
+                        <div class="flex-1">
+                            <i class="fas fa-clock mr-2"></i>{{ property.availability }}
+                        </div>
+                        <div class="w-24 text-right">
+                            <form method="POST" action="{% url 'delete_property' property.id %}" class="inline">
+                                {% csrf_token %}
+                                <button type="submit" onclick="return confirm('Are you sure you want to delete this property?')" class="text-red-500 hover:text-red-700">
+                                    <i class="fas fa-trash"></i> Delete
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="text-center text-gray-600 mt-12">You haven’t added any properties yet.</p>
+        {% endif %}
+    </div>
+
+    <script>
+        // Debug: Log when script starts
+        console.log("JavaScript loaded");
+
+        // Get DOM elements
+        const propertyType = document.getElementById('propertyType');
+        const pgFields = document.getElementById('pgFields');
+        const roomFields = document.getElementById('roomFields');
+        const imageUpload = document.getElementById('imageUpload');
+        const form = document.getElementById('propertyForm');
+        const clearFormBtn = document.getElementById('clearForm');
+        const submitBtn = form.querySelector('button[type="submit"]');
+
+        // Debug: Check if elements are found
+        console.log("propertyType:", propertyType);
+        console.log("pgFields:", pgFields);
+        console.log("roomFields:", roomFields);
+        console.log("imageUpload:", imageUpload);
+
+        // Handle dropdown change
+        propertyType.addEventListener('change', function () {
+            console.log("Property type changed to:", this.value);
+            // Hide all sections by default
+            pgFields.classList.add('hidden');
+            roomFields.classList.add('hidden');
+            imageUpload.classList.add('hidden');
+
+            // Show relevant sections based on selection
+            if (this.value === 'pg') {
+                console.log("Showing PG fields and image upload");
+                pgFields.classList.remove('hidden');
+                imageUpload.classList.remove('hidden');
+            } else if (this.value === 'room') {
+                console.log("Showing Room fields and image upload");
+                roomFields.classList.remove('hidden');
+                imageUpload.classList.remove('hidden');
+            }
+        });
+
+        // Image preview
+        const imageInputs = [document.getElementById('image1'), document.getElementById('image2'), document.getElementById('image3')];
+        const imagePreviews = [document.getElementById('preview1'), document.getElementById('preview2'), document.getElementById('preview3')];
+        imageInputs.forEach((input, index) => {
+            input.addEventListener('change', function () {
+                const file = this.files[0];
+                const preview = imagePreviews[index];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        preview.src = e.target.result;
+                        preview.classList.remove('hidden');
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    preview.src = '';
+                    preview.classList.add('hidden');
+                }
+            });
+        });
+
+        // Textarea character count
+        const pgDetails = document.querySelector('textarea[name="pgDetails"]');
+        const roomDetails = document.querySelector('textarea[name="roomDetails"]');
+        const pgDetailsCount = document.getElementById('pgDetailsCount');
+        const roomDetailsCount = document.getElementById('roomDetailsCount');
+        pgDetails.addEventListener('input', function () { pgDetailsCount.textContent = this.value.length; });
+        roomDetails.addEventListener('input', function () { roomDetailsCount.textContent = this.value.length; });
+
+        // Clear form
+        clearFormBtn.addEventListener('click', function () {
+            form.reset();
+            pgFields.classList.add('hidden');
+            roomFields.classList.add('hidden');
+            imageUpload.classList.add('hidden');
+            propertyType.value = '';
+            imagePreviews.forEach(preview => { preview.src = ''; preview.classList.add('hidden'); });
+            pgDetailsCount.textContent = '0';
+            roomDetailsCount.textContent = '0';
+            form.querySelectorAll('.invalid').forEach(field => field.classList.remove('invalid'));
+        });
+
+        // Form submission
+        form.addEventListener('submit', function (e) {
+            console.log("Form submission triggered");
+            submitBtn.disabled = true;
+            submitBtn.classList.add('loading');
+            submitBtn.textContent = 'Submitting...';
+        });
+    </script>
+</body>
+</html>

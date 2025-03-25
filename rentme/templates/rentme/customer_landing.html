@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Dashboard - RentMe</title>
+    <!-- Tailwind CSS CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Custom Styles -->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .hero {
+            background-size: cover;
+            background-position: center;
+            transition: background-image 0.5s ease-in-out;
+            height: 90vh;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3));
+            z-index: 1;
+        }
+
+        .dot {
+            width: 10px;
+            height: 10px;
+            background-color: rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .dot.active {
+            background-color: white;
+        }
+
+        .featured-property:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .service-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .mobile-menu {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: 100%;
+            z-index: 40;
+        }
+
+        .mobile-menu.active {
+            display: block;
+        }
+
+        @media (max-width: 1023px) {
+            .mobile-menu {
+                background-color: white;
+            }
+
+            #prev-slide,
+            #next-slide {
+                display: none;
+            }
+
+            .hero {
+                height: 70vh; /* Reduced height for mobile view */
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-white text-gray-800">
+    <!-- Navigation Bar -->
+    <nav class="fixed top-0 left-0 w-full bg-white shadow-md z-50">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <!-- Logo on the left -->
+            <div class="text-2xl font-medium text-red-600">RentMe</div>
+
+            <!-- Mobile View: Welcome User and Menu Toggle -->
+            <div class="flex items-center space-x-4 lg:hidden">
+                <span class="text-gray-800 font-medium">Hello {{ username }}</span>
+                <button id="menu-toggle" class="text-gray-800 focus:outline-none">
+                    <i class="fas fa-bars text-2xl"></i>
+                </button>
+            </div>
+
+            <!-- Desktop Menu -->
+            <div class="hidden lg:flex items-center w-full">
+                <!-- Centered Menu Items with a larger right shift -->
+                <div class="flex-1 flex justify-center space-x-8 ml-40">
+                    <a href="#hero-slider" class="text-gray-800 hover:text-red-600">Home</a>
+                    <a href="#services" class="text-gray-800 hover:text-red-600">Services</a>
+                    <a href="#contact" class="text-gray-800 hover:text-red-600">Contact</a>
+                    <a href="{% url 'privacy_policy' %}" class="text-gray-800 hover:text-red-600">Privacy Policy</a>
+                </div>
+                <!-- Welcome Message and Logout Button on the right -->
+                <div class="flex space-x-4 items-center">
+                    <span class="text-gray-800 font-medium mr-4">Hello {{ username }}</span>
+                    <a href="{% url 'logout' %}" class="bg-red-600 text-white px-3 py-2 rounded-full hover:bg-red-700 transition text-sm">Logout</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="mobile-menu lg:hidden bg-white shadow-md">
+            <div class="flex flex-col space-y-4 p-4 text-center">
+                <a href="#hero-slider" class="text-gray-800 hover:text-red-600">Home</a>
+                <a href="#services" class="text-gray-800 hover:text-red-600">Services</a>
+                <a href="#contact" class="text-gray-800 hover:text-red-600">Contact</a>
+                <a href="{% url 'privacy_policy' %}" class="text-gray-800 hover:text-red-600">Privacy Policy</a>
+                <div class="flex flex-col space-y-2 items-center">
+                    <a href="{% url 'logout' %}" class="bg-red-600 text-white px-4 py-2 rounded-full hover:bg-red-700 transition">Logout</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="hero-slider" class="hero relative flex items-center justify-center text-white">
+        <!-- Manual Slide Buttons -->
+        <button id="prev-slide"
+            class="absolute left-4 top-1/2 transform -translate-y-1/2 text-white hover:text-red-600 z-10">
+            <i class="fas fa-chevron-left text-3xl"></i>
+        </button>
+        <button id="next-slide"
+            class="absolute right-4 top-1/2 transform -translate-y-1/2 text-white hover:text-red-600 z-10">
+            <i class="fas fa-chevron-right text-3xl"></i>
+        </button>
+
+        <!-- Content -->
+        <div class="text-center z-10 px-4 mt-40">
+            <h1 class="text-5xl lg:text-5.7xl font-medium mb-4">Find Your Perfect Home <span class="text-red-600">Hassle
+                    Free</span></h1>
+            <p class="text-xl mb-8">Seamless Renting, Zero Brokerage!</p>
+            <a href="#featured-property"
+                class="bg-red-600 text-white py-2 px-10 rounded-full text-lg hover:bg-red-700 transition duration-300">Explore</a>
+        </div>
+
+        <!-- Dots for Slide Navigation -->
+        <div class="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex space-x-2 z-10 dots-container">
+            <!-- Dots will be dynamically added here -->
+        </div>
+    </section>
+
+    <!-- Featured Properties Section -->
+    <section class="py-5 px-10" id="featured-property">
+        <div class="container mx-auto -mt-5px">
+            <h2 class="text-3xl font-medium text-center mb-8 relative">
+                Featured Properties
+                <span class="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-12 h-1 bg-red-600"></span>
+            </h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-8xl mx-auto" id="featured-properties-grid">
+                {% if properties %}
+                    {% for property in properties %}
+                        <a href="{% url 'property_detail' property.id %}" class="block">
+                            <div class="featured-property bg-white rounded-lg shadow-md overflow-hidden transition-transform">
+                                <div class="relative">
+                                    {% if property.image1 %}
+                                        <img src="{{ property.image1.url }}" alt="Property" class="w-full h-48 object-cover">
+                                    {% else %}
+                                        <img src="https://via.placeholder.com/300x200" alt="Property" class="w-full h-48 object-cover">
+                                    {% endif %}
+                                    <span class="absolute top-2 left-2 bg-red-600 text-white px-3 py-1 rounded-full text-sm">
+                                        {% if property.property_type == 'pg' %}PG for Rent{% else %}Room for Rent{% endif %}
+                                    </span>
+                                </div>
+                                <div class="p-4">
+                                    <h3 class="text-xl font-medium mb-2">
+                                        {% if property.property_type == 'pg' %}
+                                            {{ property.pg_name|default:"Unnamed PG" }}
+                                        {% else %}
+                                            {{ property.room_title|default:"Unnamed Room" }}
+                                        {% endif %}
+                                    </h3>
+                                    <p class="text-gray-600 mb-2"><i class="fas fa-map-marker-alt text-red-600"></i> {{ property.location }}</p>
+                                    <p class="text-gray-600 mb-2"><i class="fas fa-bed text-red-600"></i>
+                                        {% if property.property_type == 'pg' %}
+                                            {{ property.pg_room_type|title }} Sharing
+                                        {% else %}
+                                            {{ property.room_size }}
+                                        {% endif %}
+                                    </p>
+                                    <p class="text-gray-600 mb-2"><i class="fas fa-clock text-red-600"></i> Available: {{ property.availability }}</p>
+                                    <p class="text-gray-600 mb-2"><i class="fas fa-user-shield text-red-600"></i> For: 
+                                        {% if property.property_type == 'pg' %}
+                                            {{ property.pg_tenants|title }}
+                                        {% else %}
+                                            {{ property.room_tenants|title }}
+                                        {% endif %}
+                                    </p>
+                                    <div class="flex flex-wrap gap-2 mb-4">
+                                        {% if property.property_type == 'pg' %}
+                                            {% if property.pg_wifi %}<span class="bg-red-100 text-red-600 px-2 py-1 rounded-full text-sm">Wi-Fi</span>{% endif %}
+                                            {% if property.pg_meals %}<span class="bg-red-100 text-red-600 px-2 py-1 rounded-full text-sm">Meals</span>{% endif %}
+                                            {% if property.pg_ac %}<span class="bg-red-100 text-red-600 px-2 py-1 rounded-full text-sm">AC</span>{% endif %}
+                                            {% if property.pg_laundry %}<span class="bg-red-100 text-red-600 px-2 py-1 rounded-full text-sm">Laundry</span>{% endif %}
+                                            {% if property.pg_security %}<span class="bg-red-100 text-red-600 px-2 py-1 rounded-full text-sm">Security</span>{% endif %}
+                                            {% if property.pg_power %}<span class="bg-red-100 text-red-600 px-2 py-1 rounded-full text-sm">Power Backup</span>{% endif %}
+                                            {% if property.pg_parking %}<span class="bg-red-100 text-red-600 px-2 py-1 rounded-full text-sm">Parking</span>{% endif %}
+                                        {% else %}
+                                            {% if property.room_bathroom %}<span class="bg-red-100 text-red-600 px-2 py-1 rounded-full text-sm">Attached Bathroom</span>{% endif %}
+                                            {% if property.room_balcony %}<span class="bg-red-100 text-red-600 px-2 py-1 rounded-full text-sm">Balcony</span>{% endif %}
+                                            {% if property.room_furnished %}<span class="bg-red-100 text-red-600 px-2 py-1 rounded-full text-sm">Furnished</span>{% endif %}
+                                            {% if property.room_kitchen %}<span class="bg-red-100 text-red-600 px-2 py-1 rounded-full text-sm">Kitchenette</span>{% endif %}
+                                            {% if property.room_light %}<span class="bg-red-100 text-red-600 px-2 py-1 rounded-full text-sm">Natural Light</span>{% endif %}
+                                            {% if property.room_wardrobe %}<span class="bg-red-100 text-red-600 px-2 py-1 rounded-full text-sm">Wardrobe</span>{% endif %}
+                                            {% if property.room_parking %}<span class="bg-red-100 text-red-600 px-2 py-1 rounded-full text-sm">Parking</span>{% endif %}
+                                        {% endif %}
+                                    </div>
+                                    <p class="text-red-600 font-medium text-xl">₹{{ property.rent|floatformat:0 }}/month</p>
+                                </div>
+                            </div>
+                        </a>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-center text-gray-600 col-span-full">No properties available at the moment.</p>
+                {% endif %}
+            </div>
+            <div class="text-center mt-8">
+                <a href="{% url 'all_properties' %}" class="bg-red-600 text-white px-6 py-2 rounded-full hover:bg-red-700 transition">See All</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Our Services Section -->
+    <section id="services" class="py-16 bg-gray-50">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl font-medium text-center mb-8 relative">
+                Our Services
+                <span class="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-12 h-1 bg-red-600"></span>
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Service Card 1 -->
+                <div class="service-card bg-white p-6 rounded-lg shadow-md text-center transition-transform">
+                    <i class="fas fa-home text-4xl text-red-600 mb-4"></i>
+                    <h3 class="text-xl font-medium mb-2">House & PG Listings</h3>
+                    <p class="text-gray-600">Explore a wide range of houses and PGs for rent, tailored to your needs and budget.</p>
+                </div>
+                <!-- Service Card 2 -->
+                <div class="service-card bg-white p-6 rounded-lg shadow-md text-center transition-transform">
+                    <i class="fas fa-search text-4xl text-red-600 mb-4"></i>
+                    <h3 class="text-xl font-medium mb-2">Advanced Search</h3>
+                    <p class="text-gray-600">Find properties with advanced filters like location, price, and amenities.</p>
+                </div>
+                <!-- Service Card 3 -->
+                <div class="service-card bg-white p-6 rounded-lg shadow-md text-center transition-transform">
+                    <i class="fas fa-handshake text-4xl text-red-600 mb-4"></i>
+                    <h3 class="text-xl font-medium mb-2">Zero Brokerage</h3>
+                    <p class="text-gray-600">Rent directly from owners with no brokerage fees.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Us Section -->
+    <section id="contact" class="py-16">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl font-medium text-center mb-8 relative">
+                Contact Us
+                <span class="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-12 h-1 bg-red-600"></span>
+            </h2>
+            <div class="max-w-2xl mx-auto bg-white p-8 rounded-lg shadow-md">
+                <form class="space-y-6">
+                    <input type="text" placeholder="Your Name"
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-red-600">
+                    <input type="email" placeholder="Your Email"
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-red-600">
+                    <textarea placeholder="Your Message" rows="4"
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-red-600"></textarea>
+                    <button type="submit"
+                        class="w-full bg-red-600 text-white p-3 rounded-lg hover:bg-red-700 transition">Send Message</button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-12">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div>
+                    <h3 class="text-xl font-medium mb-4">About RentMe</h3>
+                    <p>Your trusted platform for finding the perfect rental house or PG with ease.</p>
+                    <div class="flex space-x-4 mt-4">
+                        <a href="#" class="text-white hover:text-red-600"><i class="fab fa-facebook"></i></a>
+                        <a href="#" class="text-white hover:text-red-600"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="text-white hover:text-red-600"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-xl font-medium mb-4">Quick Links</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="hover:text-red-600">Privacy Policy</a></li>
+                        <li><a href="#" class="hover:text-red-600">Terms & Conditions</a></li>
+                        <li><a href="#" class="hover:text-red-600">Disclaimer</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-xl font-medium mb-4">Contact Us</h3>
+                    <p><i class="fas fa-map-marker-alt text-red-600"></i> Chandrasekharpur, Bhubaneswar, 751024</p>
+                    <p><i class="fas fa-phone text-red-600"></i> +91 91141***</p>
+                    <p><i class="fas fa-envelope text-red-600"></i> rentme@gmail.com</p>
+                </div>
+            </div>
+            <div class="text-center mt-8 pt-8 border-t border-gray-700">
+                <p>© 2025 RentMe. All Rights Reserved</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript for Hero Slider and Mobile Menu -->
+    <script>
+        // Hero Slider
+        const slides = [
+            "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+            "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+            "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=2075&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+            "https://images.unsplash.com/photo-1605276374104-dee2a0ed3cd6?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+        ];
+        let currentSlide = 0;
+        const heroSection = document.getElementById('hero-slider');
+        const dotsContainer = document.querySelector('.dots-container');
+
+        // Set initial background
+        heroSection.style.backgroundImage = `url('${slides[currentSlide]}')`;
+
+        // Function to update the background image
+        function updateSlide() {
+            heroSection.style.backgroundImage = `url('${slides[currentSlide]}')`;
+            updateDots();
+        }
+
+        // Function to change slides
+        function changeSlide(direction) {
+            currentSlide = (currentSlide + direction + slides.length) % slides.length;
+            updateSlide();
+        }
+
+        // Function to create dots
+        function createDots() {
+            slides.forEach((_, index) => {
+                const dot = document.createElement('div');
+                dot.classList.add('dot');
+                if (index === 0) dot.classList.add('active');
+                dot.addEventListener('click', () => {
+                    currentSlide = index;
+                    updateSlide();
+                });
+                dotsContainer.appendChild(dot);
+            });
+        }
+
+        // Function to update active dot
+        function updateDots() {
+            const dots = dotsContainer.querySelectorAll('.dot');
+            dots.forEach((dot, index) => {
+                dot.classList.toggle('active', index === currentSlide);
+            });
+        }
+
+        // Auto-slide every 5 seconds
+        let slideInterval = setInterval(() => changeSlide(1), 5000);
+
+        // Manual slide controls
+        document.getElementById('prev-slide').addEventListener('click', () => {
+            clearInterval(slideInterval);
+            changeSlide(-1);
+            slideInterval = setInterval(() => changeSlide(1), 5000);
+        });
+
+        document.getElementById('next-slide').addEventListener('click', () => {
+            clearInterval(slideInterval);
+            changeSlide(1);
+            slideInterval = setInterval(() => changeSlide(1), 5000);
+        });
+
+        // Initialize slider
+        createDots();
+        updateSlide();
+
+        // Mobile Menu Toggle
+        const menuToggle = document.getElementById('menu-toggle');
+        const mobileMenu = document.getElementById('mobile-menu');
+
+        menuToggle.addEventListener('click', () => {
+            mobileMenu.classList.toggle('active');
+        });
+    </script>
+</body>
+
+</html>
